@@ -1,0 +1,155 @@
+#! /bin/sh
+# This block is trying to do the basics of checking to see if
+# the HADOOP_HOME and the JAVA_HOME variables have been set correctly
+# and if they are not been set, suggest a setting in line with the earlier examples
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+The script actually tests for:
+the presence of the java binary and the hadoop script,
+and verifies that the expected versions are present
+that the version of java and hadoop is as expected (warning if not)
+that the version of java and hadoop referred to by the
+JAVA_HOME and HADOOP_HOME environment variables are default version to run.
+The 'if [' construct you see is a shortcut for 'if test' ....
+the -z tests for a zero length string
+the -d tests for a directory
+the -x tests for the execute bit
+-eq tests numbers
+= tests strings
+man test will describe all of the options
+# The '1>&2' construct directs the standard output of the
+# command to the standard error stream.
+if [ -z "$HADOOP_HOME" ]; then
+echo "The HADOOP_HOME environment variable is not set" 1>&2
+if [ -d ~/src/hadoop-0.19.0 ]; then
+echo "Try export HADOOP_HOME=~/src/hadoop-0.19.0" 1>&2
+fi
+exit 1;
+fi
+# This block is trying to do the basics of checking to see if
+# the JAVA_HOME variable has been set
+# and if it hasn't been set, suggest a setting in line with the earlier examples
+if [ -z "$JAVA_HOME" ]; then
+echo "The JAVA HOME environment variable is not set" 1>&2
+if [ -d /usr/java/jdk1.6.0_07 ]; then
+echo "Try export JAVA_HOME=/usr/java/jdk1.6.0_07" 1>&2
+fi
+exit 1
+fi
+C ha p t e r 1   ■﻿ G ETTI N G S TARTED W I TH HA D O O P C O RE
+  
+# We are now going to see if a java program and hadoop programs
+# are in the path, and if they are the ones we are expecting.
+# The which command returns the full path to the first instance
+# of the program in the PATH environment variable
+#
+JAVA_BIN=`which java`
+HADOOP_BIN=`which hadoop`
+# Check for the presence of java in the path and suggest an
+# appropriate path setting if java is not found
+if [ -z "${JAVA_BIN}" ]; then
+echo "The java binary was not found using your PATH settings" 1>&2
+if [ -x ${JAVA_HOME}/bin/java ]; then
+echo 'Try export PATH=${JAVA_HOME}/bin' 1>&2
+fi
+exit 1
+fi
+# Check for the presence of hadoop in the path and suggest an
+# appropriate path setting if java is not found
+if [ -z "${HADOOP_BIN}" ]; then
+echo "The hadoop binary was not found using your PATH settings" 1>&2
+if [ -x ${HADOOP_HOME}/bin/hadoop ]; then
+echo 'Try export PATH=${HADOOP_HOME}/bin:${PATH}' 1>&2
+fi
+exit 1
+fi
+# Double check that the version of java installed in ${JAVA_HOME}
+# is the one stated in the examples.
+# If you have installed a different version your results may vary.
+#
+if ! ${JAVA_HOME}/bin/java -version 2>&1 | grep -q 1.6.0_07; then
+(echo –n "Your JAVA_HOME version of java is not the"
+echo –n " 1.6.0_07 version, your results may vary from"
+echo " the book examples.") 1>&2
+fi
+# Double check that the java in the PATH is the expected version.
+if ! java -version 2>&1 | grep -q 1.6.0_07; then
+(echo –n "Your default java version is not the 1.6.0_07 "
+echo –n "version, your results may vary from the book"
+echo " examples.") 1>&2
+fi
+15
+16
+Ch apt er 1  ■﻿ GETTI N G STARTED W ITH HAD OOP C O RE
+  
+# Try to get the location of the hadoop core jar file
+# This is used to verify the version of hadoop installed
+HADOOP_JAR=`ls -1 ${HADOOP_HOME}/hadoop-0.19.0-core.jar`
+HADOOP_ALT_JAR=`ls -1 ${HADOOP_HOME}/hadoop-*-core.jar`
+# If a hadoop jar was not found, either the installation
+# was incorrect or a different version installed
+if [ -z "${HADOOP_JAR}" -a -z "${HADOOP_ALT_JAR}" ]; then
+(echo –n "Your HADOOP_HOME does not provide a hadoop"
+echo –n " core jar. Your installation probably needs"
+echo –n " to be redone or the HADOOP_HOME environment"
+echo variable needs to be correctly set.") 1>&2
+exit 1
+fi
+if [ -z "${HADOOP_JAR}" -a ! -z "${HADOOP_ALT_JAR}" ]; then
+(echo –n "Your hadoop version appears to be different"
+echo –n " than the 0.19.0 version, your results may vary"
+echo " from the book examples.") 1>&2
+fi
+if [ `pwd` != ${HADOOP_HOME} ]; then
+(echo –n 'Please change your working directory to"
+echo –n " ${HADOOP_HOME}. cd ${HADOOP_HOME} <Enter>") 1>&2
+exit 1
+fi
+echo
+echo
+echo
+echo
+echo
+echo
+echo
+echo
+echo
+"You are good to go"
+–n "your JAVA_HOME is set to ${JAVA_HOME} which "
+"appears to exist and be the right version for the examples."
+–n "your HADOOP_HOME is set to ${HADOOP_HOME} which "
+"appears to exist and be the right version for the examples."
+"your java program is the one in ${JAVA_HOME}"
+"your hadoop program is the one in ${HADOOP_HOME}"
+–n "The shell current working directory is ${HADOOP_HOME} "
+"as the examples require."
+if [ "${JAVA_BIN}" = "${JAVA_HOME}/bin/java" ]; then
+echo "Your PATH appears to have the JAVA_HOME java program as the default java."
+else
+echo –n "Your PATH does not appear to provide the JAVA_HOME"
+echo " java program as the default java."
+fi
+C ha p t e r 1   ■﻿ G ETTI N G S TARTED W I TH HA D O O P C O RE
+  
+if [ "${HADOOP_BIN}" = "${HADOOP_HOME}/bin/hadoop" ]; then
+echo –n "Your PATH appears to have the HADOOP_HOME"
+echo " hadoop program as the default hadoop."
+else
+echo –n "Your PATH does not appear to provide the the HADOOP_HOME "
+echo "hadoop program as the default hadoop program."
+fi
+exit 0
+
